@@ -1,0 +1,9 @@
+{
+  "extends": "openlayers",
+  "plugins": [
+    "@openlayers"
+  ],
+  "rules": {
+    "valid-jsdoc": "off",
+  }
+}
