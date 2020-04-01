@@ -2,7 +2,7 @@
 
 Provides a USNG "map collar" for OpenLayers maps.
 The spec USNG map collar is designed to be outside the map
-but this renders as a layer inside of hte map.
+but this renders as a layer inside of the map.
 
 ## Demo
 
@@ -27,7 +27,7 @@ npm install usng-map-collar
 import UsngGrid from 'usng-map-collar/UsngGrid';
 ```
 
-Then add it as a layer to the OpenLayer's Map.
+Then add it as a layer to the OpenLayers Map.
 
 ## Styling
 
@@ -39,10 +39,10 @@ options to the constructor.
  * `eastWestLabelStyle` - Style for the labels that are drawn east-to-west.
  * `northSouthLabelStyle` - Style for the labels that are drawn from north-to-south.
 
-## Controlling whne grid levels show up
+## Controlling when grid levels show up
 
 The constructor can be given an `intervalFn` function which determines when
-different grid intervals will be displayed. The following is the defaul:
+different grid intervals will be displayed. The following is the default:
 
 ```
 const defaultIntervalFn = (resolution) => {
