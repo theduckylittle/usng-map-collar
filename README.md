@@ -13,7 +13,9 @@ npm install
 npm start
 ```
 
-The navigate a browser to [http://localhost:1234/](http://localhost:1234).
+Then navigate a browser to [http://localhost:1234/](http://localhost:1234)
+
+Live demo on [GH Pages!](https://theduckylittle.github.io/usng-map-collar/)
 
 ## WIP: Using in your project
 
