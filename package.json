@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint *.js",
     "start": "parcel index.html",
-    "build": "parcel build index.html -d ./demo"
+    "build": "parcel build index.html -d ./docs --public-url /usng-map-collar"
   },
   "author": "Dan \"Ducky\" Little",
   "license": "MIT",

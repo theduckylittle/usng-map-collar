@@ -418,4 +418,4 @@ var t,i=arguments[3];!function(i,n){"object"==typeof exports&&"undefined"!=typeo
 },{"./XYZ.js":"knlU"}],"Focm":[function(require,module,exports) {
 "use strict";require("ol/ol.css");var e=i(require("ol/Map")),r=i(require("ol/View")),u=i(require("ol/layer/Tile")),l=i(require("./UsngGrid.js")),o=i(require("ol/source/OSM")),a=require("ol/proj");function i(e){return e&&e.__esModule?e:{default:e}}var t=new e.default({layers:[new u.default({source:new o.default({wrapX:!1})}),new l.default],target:"map",view:new r.default({center:(0,a.fromLonLat)([-93.2223,44.8848]),zoom:7})});window.olMap=t;
 },{"ol/ol.css":"JiFC","ol/Map":"kYy5","ol/View":"hNqE","ol/layer/Tile":"BUEc","./UsngGrid.js":"GhcZ","ol/source/OSM":"Rmo4","ol/proj":"Diht"}]},{},["Focm"], null)
-//# sourceMappingURL=/usng-map-collar.316d15cc.js.map
+//# sourceMappingURL=/usng-map-collar/usng-map-collar.316d15cc.js.map
