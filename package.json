@@ -4,7 +4,8 @@
   "main": "UsngGrid.js",
   "scripts": {
     "lint": "eslint *.js",
-    "start": "parcel index.html"
+    "start": "parcel index.html",
+    "build": "parcel build index.html -d ./demo"
   },
   "author": "Dan \"Ducky\" Little",
   "license": "MIT",

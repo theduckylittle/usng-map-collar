@@ -36,8 +36,7 @@ options to the constructor.
 
  * `zoneLineStyle` - Styling for the UTM zone lines.
  * `gridLineStyle` - Style for the USNG grid-lines.
- * `eastWestLabelStyle` - Style for the labels that are drawn east-to-west.
- * `northSouthLabelStyle` - Style for the labels that are drawn from north-to-south.
+ * `gridLabelStyle` - Style for the labels on the grid.
 
 ## Controlling when grid levels show up
 
@@ -46,17 +45,19 @@ different grid intervals will be displayed. The following is the default:
 
 ```
 const defaultIntervalFn = (resolution) => {
-  let interval = 100000;
-  if (resolution < 0.04) {
+  let interval = 1000000;
+  if (resolution < 0.02) {
     interval = 1;
-  } else if (resolution < 0.5) {
+  } else if (resolution < 0.25) {
     interval = 10;
-  } else if (resolution < 3) {
+  } else if (resolution < 2.5) {
     interval = 100;
-  } else if (resolution < 20) {
+  } else if (resolution < 25) {
     interval = 1000;
   } else if (resolution < 160) {
     interval = 10000;
+  } else if (resolution < 2500) {
+    interval = 100000;
   }
   return interval;
 };

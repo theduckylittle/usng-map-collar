@@ -69,8 +69,9 @@ const formatLabel = (meters, interval, zone, direction) => {
     }
   }
   const nDigits = LABEL_DIGITS[interval];
-  const asString = (meters < 1000000 ? '0' : '') + meters;
-  return asString.slice(2, 2 + nDigits);
+  const prefix = meters < 1000000 ? '0' : '';
+  return (prefix + meters).slice(2, nDigits + 2);
+
 };
 
 const extentToLonLat = (extent) => (
@@ -94,37 +95,57 @@ const gridLinesEasting = (zone, extent84, extent, interval = 100000) => {
   const zoneEnd = zone * 6 - 180;
   const zoneStart = zoneEnd - 6;
 
-  const topRight = utmFromLatLon(extent84[3], extent84[2] > zoneEnd ? zoneEnd : extent84[2]);
   const bottomLeft = utmFromLatLon(extent84[1], extent84[0] < zoneStart ? zoneStart : extent84[0]);
+  const rightUtm = utmFromLatLon(extent84[1], zoneStart + 6, zone).easting;
 
-  if (zoneStart > extent84[0]) {
-    bottomLeft.easting = 300000;
+  const start = Math.ceil(bottomLeft.easting / interval) * interval;
+  const end = Math.floor(rightUtm / interval) * interval;
+
+  let classSuffix = '';
+  if (interval < 10) {
+    classSuffix = '-1m';
+  } else if (interval < 100) {
+    classSuffix = '-10m';
+  } else if (interval <= 1000) {
+    classSuffix = '-1k';
   }
 
-  if (zoneEnd < extent84[2]) {
-    topRight.easting = 700000;
-  }
-
-  const start = Math.floor(bottomLeft.easting / interval) * interval;
-  const end = Math.ceil(topRight.easting / interval) * interval;
+  const startClass = 'zone-ew-start' + classSuffix;
+  const endClass = 'zone-ew-end' + classSuffix;
 
   for (let easting = start; easting <= end; easting += interval) {
     const latlon = utmToLatLon(easting, bottomLeft.northing, zone, null, true);
     const a = fromLonLat([latlon.longitude, extent84[1]]);
     const b = fromLonLat([latlon.longitude, extent84[3]]);
-    // put the label at the center of the quad
-    const labelLL = utmToLatLon(easting + interval / 2, bottomLeft.northing, zone, null, true);
-    const labelCoords = fromLonLat([labelLL.longitude, labelLL.latitude]);
 
     lines.push({
       geom: new LineString(a.concat(b), GeometryLayout.XY)
     });
 
-    points.push({
-      geom: new Point(labelCoords),
-      label: formatLabel(easting, interval, zone, 'ew'),
-      class: 'ew'
-    });
+    const labelLL = utmToLatLon(easting, bottomLeft.northing, zone, null, true);
+    const labelCoords = fromLonLat([labelLL.longitude, labelLL.latitude]);
+    const point = new Point([labelCoords[0], extent[1]]);
+
+    if (easting % 100000 === 0) {
+      points.push({
+        geom: point.clone(),
+        label: formatLabel(easting, 100000, zone, 'ew'),
+        class: startClass
+      });
+      points.push({
+        geom: point.clone(),
+        label: formatLabel(easting - 100000, 100000, zone, 'ew'),
+        class: endClass
+      });
+    }
+
+    if (interval !== 100000) {
+      points.push({
+        geom: point.clone(),
+        label: formatLabel(easting, interval, zone, 'ew'),
+        class: 'ew-center'
+      });
+    }
   }
 
   return {
@@ -141,32 +162,57 @@ const gridLinesNorthing = (zone, extent84, extent, interval = 100000) => {
   const zoneStart = zoneEnd - 6;
 
   const topLeft = utmFromLatLon(extent84[3], extent84[0]);
-  const bottomRight = utmFromLatLon(extent84[1], extent84[2]);
+  const bottomLeft = utmFromLatLon(extent84[1], extent84[0] < zoneStart ? zoneStart : extent84[0]);
 
-  const start = Math.floor(bottomRight.northing / interval) * interval;
+  // make sure the labels are on the left size
+  // Either pinned to the start of the zone or the
+  //  left of the map.
+  let labelLeft = fromLonLat([zoneStart, 0])[0];
+  if (zoneStart < extent84[0]) {
+    labelLeft = extent[0];
+  }
+
+  const start = Math.floor(bottomLeft.northing / interval) * interval;
   const end = Math.ceil(topLeft.northing / interval) * interval;
 
   for (let northing = start; northing <= end; northing += interval) {
-    const latlon = utmToLatLon(topLeft.easting, northing, zone, null, true);
+    const latlon = utmToLatLon(bottomLeft.easting, northing, zone, null, true);
     const a = fromLonLat([zoneStart, latlon.latitude]);
     const b = fromLonLat([zoneEnd, latlon.latitude]);
     a[0] = zoneStart < extent84[0] ? extent[0] : a[0];
     b[0] = zoneEnd > extent84[2] ? extent[2] : b[0];
 
     // put the label at the center of the quad
-    const labelLL = utmToLatLon(bottomRight.easting, northing + interval / 2, zone, null, true);
+    const labelLL = utmToLatLon(bottomLeft.easting, northing, zone, null, true);
     const labelCoords = fromLonLat([labelLL.longitude, labelLL.latitude]);
 
     lines.push({
       geom: new LineString(a.concat(b), GeometryLayout.XY)
     });
 
-    points.push({
-      geom: new Point([b[0], labelCoords[1]]),
-      label: formatLabel(northing, interval, zone, 'ns'),
-      class: 'ns'
-    });
+    const point = new Point([labelLeft, labelCoords[1]]);
+
+    if (northing % 100000 === 0) {
+      points.push({
+        geom: point.clone(),
+        label: formatLabel(northing, 100000, zone, 'ns'),
+        class: 'ns-start'
+      });
+      points.push({
+        geom: point.clone(),
+        label: formatLabel(northing - 100000, 100000, zone, 'ns'),
+        class: 'ns-end'
+      });
+    }
+    if (interval !== 100000) {
+      points.push({
+        geom: point.clone(),
+        label: formatLabel(northing, interval, zone, 'ns'),
+        class: 'ns'
+      });
+    }
   }
+
   return {
     lines,
     points
@@ -178,17 +224,19 @@ const gridLinesNorthing = (zone, extent84, extent, interval = 100000) => {
  * of the map into an "interval" of meters used.
  */
 const defaultIntervalFn = (resolution) => {
-  let interval = 100000;
-  if (resolution < 0.04) {
+  let interval = 1000000;
+  if (resolution < 0.02) {
     interval = 1;
-  } else if (resolution < 0.5) {
+  } else if (resolution < 0.25) {
     interval = 10;
-  } else if (resolution < 3) {
+  } else if (resolution < 2.5) {
     interval = 100;
-  } else if (resolution < 20) {
+  } else if (resolution < 25) {
     interval = 1000;
   } else if (resolution < 160) {
     interval = 10000;
+  } else if (resolution < 2500) {
+    interval = 100000;
   }
   return interval;
 };
@@ -214,7 +262,6 @@ class UsngGrid extends VectorLayer {
         features: new Collection(),
         overlaps: false,
         useSpatialIndex: false
-        //wrapX: options.wrapX
       })
     );
 
@@ -228,40 +275,113 @@ class UsngGrid extends VectorLayer {
     this.gridLineStyle = options.gridLineStyle || new Style({
       stroke: new Stroke({
         color: 'rgba(0,0,0,0.9)',
-        width: 2,
-        lineDash: [0.5, 4]
+        width: 1
       })
     });
 
+    const squareIdStyle = {
+      font: '14px Calibri,sans-serif',
+      textBaseline: 'bottom',
+      textAlign: 'center',
+      fill: new Fill({
+        color: 'rgba(0,0,0,1)'
+      }),
+      stroke: new Stroke({
+        color: 'rgba(255,255,255,1)',
+        width: 3
+      }),
+      text: '00',
+      ...options.gridLabelStyle
+    };
+
+    const nsBaseStyle = {
+      ...squareIdStyle,
+      textBaseline: 'middle',
+      textAlign: 'left',
+      offsetX: 5
+    };
+
     this.labelStyle = {
-      'ew': options.eastWestLabelStyle || new Style({
+      'zone-ew-start': new Style({
         text: new Text({
-          font: '12px Calibri,sans-serif',
-          textBaseline: 'bottom',
-          textAlign: 'center',
-          fill: new Fill({
-            color: 'rgba(0,0,0,1)'
-          }),
-          stroke: new Stroke({
-            color: 'rgba(255,255,255,1)',
-            width: 3
-          }),
-          text: '00'
+          ...squareIdStyle,
+          textAlign: 'left',
+          offsetX: 5
         })
       }),
-      'ns': options.northSouthLabelStyle || new Style({
+      'zone-ew-end': new Style({
         text: new Text({
-          font: '12px Calibri,sans-serif',
+          ...squareIdStyle,
           textAlign: 'right',
-          offsetX: -5,
-          fill: new Fill({
-            color: 'rgba(0,0,0,1)'
-          }),
-          stroke: new Stroke({
-            color: 'rgba(255,255,255,1)',
-            width: 3
-          }),
-          text: '00'
+          offsetX: -5
+        })
+      }),
+      'zone-ew-start-1k': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          textAlign: 'left',
+          offsetX: 14
+        })
+      }),
+      'zone-ew-end-1k': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          textAlign: 'right',
+          offsetX: -14
+        })
+      }),
+      'zone-ew-start-10m': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          textAlign: 'left',
+          offsetX: 20
+        })
+      }),
+      'zone-ew-end-10m': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          textAlign: 'right',
+          offsetX: -20
+        })
+      }),
+      'zone-ew-start-1m': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          textAlign: 'left',
+          offsetX: 25
+        })
+      }),
+      'zone-ew-end-1m': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          textAlign: 'right',
+          offsetX: -25
+        })
+      }),
+      'ew-center': new Style({
+        text: new Text({
+          ...squareIdStyle,
+          font: '12px Calibri,sans-serif',
+          textAlign: 'center'
+        })
+      }),
+      'ns': new Style({
+        text: new Text({
+          ...nsBaseStyle,
+          squareIdStyle,
+          font: '12px Calibri,sans-serif'
+        })
+      }),
+      'ns-start': new Style({
+        text: new Text({
+          ...nsBaseStyle,
+          offsetY: -15
+        })
+      }),
+      'ns-end': options.northSouthLabelStyle || new Style({
+        text: new Text({
+          ...nsBaseStyle,
+          offsetY: 15
         })
       })
     };
@@ -287,33 +407,37 @@ class UsngGrid extends VectorLayer {
       // draw the zone line
       const zoneFeature = new Feature();
       const zoneLon = -180 + zone * 6;
-      const zoneLine = fromLonLat([zoneLon, -90]).concat(fromLonLat([zoneLon, 90]));
+      const zoneLine = fromLonLat([zoneLon, -90])
+        .concat(fromLonLat([zoneLon, 0]))
+        .concat(fromLonLat([zoneLon, 90]));
       zoneFeature.setGeometry(new LineString(zoneLine, GeometryLayout.XY));
       zoneFeature.setStyle(this.zoneLineStyle);
       collection.push(zoneFeature);
 
-      const eastingLines = gridLinesEasting(zone, extent84, extent, interval);
-      const northingLines = gridLinesNorthing(zone, extent84, extent, interval);
+      if (interval <= 100000) {
+        const eastingLines = gridLinesEasting(zone, extent84, extent, interval);
+        const northingLines = gridLinesNorthing(zone, extent84, extent, interval);
 
-      const lineFeatures = eastingLines.lines.concat(northingLines.lines);
-      const pointFeatures = eastingLines.points.concat(northingLines.points);
+        const lineFeatures = eastingLines.lines.concat(northingLines.lines);
+        const pointFeatures = eastingLines.points.concat(northingLines.points);
 
-      for (let l = 0, ll = lineFeatures.length; l < ll; l++) {
-        const def = lineFeatures[l];
-        const gridFeature = new Feature();
-        gridFeature.setGeometry(def.geom);
-        gridFeature.setStyle(this.gridLineStyle);
-        collection.push(gridFeature);
-      }
+        for (let l = 0, ll = lineFeatures.length; l < ll; l++) {
+          const def = lineFeatures[l];
+          const gridFeature = new Feature();
+          gridFeature.setGeometry(def.geom);
+          gridFeature.setStyle(this.gridLineStyle);
+          collection.push(gridFeature);
+        }
 
-      for (let p = 0, pp = pointFeatures.length; p < pp; p++) {
-        const def = pointFeatures[p];
-        const f = new Feature();
-        f.setGeometry(def.geom);
-        const labelStyle = this.labelStyle[def.class].clone();
-        labelStyle.getText().setText(def.label);
-        f.setStyle(labelStyle);
-        collection.push(f);
+        for (let p = 0, pp = pointFeatures.length; p < pp; p++) {
+          const def = pointFeatures[p];
+          const f = new Feature();
+          f.setGeometry(def.geom);
+          const labelStyle = this.labelStyle[def.class].clone();
+          labelStyle.getText().setText(def.label);
+          f.setStyle(labelStyle);
+          collection.push(f);
+        }
       }
     }
   }

@@ -1,9 +1,15 @@
 {
-  "extends": "openlayers",
-  "plugins": [
-    "@openlayers"
+  "extends": [
+    "openlayers",
+    "eslint:recommended"
   ],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "ecmaFeatures": {
+      "jsx": true,
+    }
+  },
   "rules": {
-    "valid-jsdoc": "off",
+    "valid-jsdoc": "off"
   }
 }
