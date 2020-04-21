@@ -1,6 +1,6 @@
 {
   "name": "usng-map-collar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "UsngGrid.js",
   "scripts": {
     "lint": "eslint *.js",
