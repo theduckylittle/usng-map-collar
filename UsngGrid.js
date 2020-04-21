@@ -161,8 +161,9 @@ const gridLinesNorthing = (zone, extent84, extent, interval = 100000) => {
   const zoneEnd = zone * 6 - 180;
   const zoneStart = zoneEnd - 6;
 
-  const topLeft = utmFromLatLon(extent84[3], extent84[0]);
+  const topRight = utmFromLatLon(extent84[3], extent84[3]);
   const bottomLeft = utmFromLatLon(extent84[1], extent84[0] < zoneStart ? zoneStart : extent84[0]);
+  const bottomRight = utmFromLatLon(extent84[1], zoneEnd > extent84[2] ? extent84[2] : zoneEnd);
 
   // make sure the labels are on the left size
   // Either pinned to the start of the zone or the
@@ -173,12 +174,14 @@ const gridLinesNorthing = (zone, extent84, extent, interval = 100000) => {
   }
 
   const start = Math.floor(bottomLeft.northing / interval) * interval;
-  const end = Math.ceil(topLeft.northing / interval) * interval;
+  const end = Math.ceil(topRight.northing / interval) * interval;
 
   for (let northing = start; northing <= end; northing += interval) {
     const latlon = utmToLatLon(bottomLeft.easting, northing, zone, null, true);
+    const right = utmToLatLon(bottomRight.easting, northing, zone, null, true);
+
     const a = fromLonLat([zoneStart, latlon.latitude]);
-    const b = fromLonLat([zoneEnd, latlon.latitude]);
+    const b = fromLonLat([zoneEnd, right.latitude]);
     a[0] = zoneStart < extent84[0] ? extent[0] : a[0];
     b[0] = zoneEnd > extent84[2] ? extent[2] : b[0];
 
