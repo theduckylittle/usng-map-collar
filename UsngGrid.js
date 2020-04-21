@@ -161,7 +161,7 @@ const gridLinesNorthing = (zone, extent84, extent, interval = 100000) => {
   const zoneEnd = zone * 6 - 180;
   const zoneStart = zoneEnd - 6;
 
-  const topRight = utmFromLatLon(extent84[3], extent84[3]);
+  const topRight = utmFromLatLon(extent84[3], extent84[2]);
   const bottomLeft = utmFromLatLon(extent84[1], extent84[0] < zoneStart ? zoneStart : extent84[0]);
   const bottomRight = utmFromLatLon(extent84[1], zoneEnd > extent84[2] ? extent84[2] : zoneEnd);
 
