@@ -1,6 +1,6 @@
 {
   "name": "usng-map-collar",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "main": "UsngGrid.js",
   "targets": {
     "main": false
