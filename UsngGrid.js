@@ -24,7 +24,6 @@
 
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import GeometryLayout from 'ol/geom/GeometryLayout';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
 import Stroke from 'ol/style/Stroke';
@@ -119,7 +118,7 @@ const gridLinesEasting = (zone, extent84, extent, interval = 100000) => {
     const b = fromLonLat([latlon.longitude, extent84[3]]);
 
     lines.push({
-      geom: new LineString(a.concat(b), GeometryLayout.XY)
+      geom: new LineString(a.concat(b), 'XY')
     });
 
     const labelLL = utmToLatLon(easting, bottomLeft.northing, zone, null, true);
@@ -190,7 +189,7 @@ const gridLinesNorthing = (zone, extent84, extent, interval = 100000) => {
     const labelCoords = fromLonLat([labelLL.longitude, labelLL.latitude]);
 
     lines.push({
-      geom: new LineString(a.concat(b), GeometryLayout.XY)
+      geom: new LineString(a.concat(b), 'XY')
     });
 
     const point = new Point([labelLeft, labelCoords[1]]);
@@ -413,7 +412,7 @@ class UsngGrid extends VectorLayer {
       const zoneLine = fromLonLat([zoneLon, -90])
         .concat(fromLonLat([zoneLon, 0]))
         .concat(fromLonLat([zoneLon, 90]));
-      zoneFeature.setGeometry(new LineString(zoneLine, GeometryLayout.XY));
+      zoneFeature.setGeometry(new LineString(zoneLine, 'XY'));
       zoneFeature.setStyle(this.zoneLineStyle);
       collection.push(zoneFeature);
 

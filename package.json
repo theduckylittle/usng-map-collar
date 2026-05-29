@@ -2,10 +2,13 @@
   "name": "usng-map-collar",
   "version": "1.0.2",
   "main": "UsngGrid.js",
+  "targets": {
+    "main": false
+  },
   "scripts": {
     "lint": "eslint *.js",
     "start": "parcel index.html",
-    "build": "parcel build index.html -d ./docs --public-url /usng-map-collar"
+    "build": "parcel build index.html --dist-dir ./docs --public-url /usng-map-collar"
   },
   "author": "Dan \"Ducky\" Little",
   "license": "MIT",
@@ -13,14 +16,14 @@
     "utm": "^1.1.1"
   },
   "peerDependencies": {
-    "ol": "^6.2.1"
+    "ol": ">=6.2.1 <11"
   },
   "devDependencies": {
     "@openlayers/eslint-plugin": "^4.0.0",
     "eslint": "^6.8.0",
     "eslint-config-openlayers": "^13.0.0",
-    "ol": "^6.2.1",
-    "parcel": "^1.12.4"
+    "ol": "^10.9.0",
+    "parcel": "^2.12.0"
   },
   "description": "An OpenLayers class and demo to render the USNG on the map"
 }
